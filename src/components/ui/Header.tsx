@@ -1,16 +1,48 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Header() {
   const location = useLocation();
   const pathname = location.pathname;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const isHome = pathname === '/' || pathname === '/home';
   const isAbout = pathname === '/about';
+  const isBrainTrust = pathname === '/brain-trust';
+  const isFounders = pathname === '/founders';
+  const isTeam = pathname === '/team';
+  const isCompetitive = pathname === '/competitive-landscape';
+  const isInsightsActive = isBrainTrust || isFounders || isTeam || isCompetitive;
+
   const activeClass = 'bg-[#2A2A2A] border border-gray-500';
   const baseBtn =
     'rounded-lg px-3 py-1.5 flex items-center space-x-2 text-white font-medium text-sm';
   const inactiveHover =
     'hover:bg-[#2A2A2A] hover:border hover:border-gray-500 transition-all duration-200';
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  const insightsLinks = [
+    { to: '/brain-trust', label: 'Brain Trust', active: isBrainTrust },
+    { to: '/founders', label: 'Founders', active: isFounders },
+    { to: '/team', label: 'Team', active: isTeam },
+    { to: '/competitive-landscape', label: 'Competitive Landscape', active: isCompetitive },
+  ];
 
   return (
     <header className="fixed top-0 w-full z-50 p-2 md:pt-6">
@@ -67,7 +99,95 @@ export default function Header() {
             <span>About</span>
           </Link>
 
-          <Link to="https://app.scholarspark.ai" target="_blank" className={`${baseBtn} ${inactiveHover}`}>
+          {/* Insights Dropdown */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className={`${baseBtn} ${isInsightsActive ? activeClass : inactiveHover} cursor-pointer select-none`}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx="9"
+                  cy="7"
+                  r="4"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M23 21v-2a4 4 0 0 0-3-3.87"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16 3.13a4 4 0 0 1 0 7.75"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>Insights</span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={`transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`}
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {/* Dropdown */}
+            {menuOpen && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-[#1A1A1A]/95 backdrop-blur-md border border-gray-600/50 rounded-lg shadow-xl overflow-hidden z-50">
+                {insightsLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`block px-4 py-2.5 text-sm font-medium transition-colors duration-150 ${
+                      link.active
+                        ? 'bg-[#2A2A2A] text-[#8F8EDF]'
+                        : 'text-white hover:bg-[#2A2A2A] hover:text-[#8F8EDF]'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Preview app */}
+          <Link
+            to="https://app.scholarspark.ai"
+            target="_blank"
+            className={`${baseBtn} ${inactiveHover}`}
+          >
             <svg
               width="16"
               height="16"
